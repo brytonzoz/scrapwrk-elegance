@@ -11,6 +11,11 @@ interface ProductImageCarouselProps {
 const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ images }) => {
   const [currentImage, setCurrentImage] = useState(0);
 
+  // Reset current image when images change
+  useEffect(() => {
+    setCurrentImage(0);
+  }, [images]);
+
   const nextImage = () => {
     setCurrentImage((prev) => (prev + 1) % images.length);
   };
@@ -26,7 +31,17 @@ const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ images }) =
     }, 5000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]);
+
+  if (!images || images.length === 0) {
+    return (
+      <div className="rounded-lg bg-gray-900 aspect-ratio-[3/4]">
+        <div className="w-full h-full flex items-center justify-center text-gray-500">
+          No image available
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative group">
@@ -70,21 +85,23 @@ const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ images }) =
         <ChevronRight className="h-6 w-6" />
       </button>
       
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
-        {images.map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentImage(index)}
-            className={cn(
-              "w-2 h-2 rounded-full transition-all",
-              currentImage === index 
-                ? "bg-white w-4" 
-                : "bg-white/50 hover:bg-white/80"
-            )}
-            aria-label={`Go to image ${index + 1}`}
-          />
-        ))}
-      </div>
+      {images.length > 1 && (
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+          {images.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => setCurrentImage(index)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                currentImage === index 
+                  ? "bg-white w-4" 
+                  : "bg-white/50 hover:bg-white/80"
+              )}
+              aria-label={`Go to image ${index + 1}`}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };

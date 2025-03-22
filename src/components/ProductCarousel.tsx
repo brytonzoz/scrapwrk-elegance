@@ -1,5 +1,5 @@
 
-import { useState, useRef } from "react";
+import { useRef } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -39,8 +39,6 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
 
   return (
     <div className="relative py-8">
-      <h2 className="text-2xl font-bold mb-6 text-center">Product Collection</h2>
-      
       <div className="relative">
         {/* Left scroll button */}
         <button 

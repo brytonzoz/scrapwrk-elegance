@@ -1,7 +1,9 @@
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Plus, Check } from "lucide-react";
+import { Plus, Check, ShoppingBag } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
+import { useProduct } from "@/context/ProductContext";
 
 interface Feature {
   id?: string;
@@ -19,14 +21,28 @@ interface Product {
 interface ProductDetailsProps {
   product: Product;
   onAddToCart: () => void;
-  isAdding: boolean;
 }
 
 const ProductDetails: React.FC<ProductDetailsProps> = ({ 
   product, 
-  onAddToCart,
-  isAdding
+  onAddToCart
 }) => {
+  const [isAdding, setIsAdding] = useState(false);
+  const { cartOpen, setCartOpen } = useProduct();
+  
+  const handleAddToCart = () => {
+    setIsAdding(true);
+    onAddToCart();
+    
+    setTimeout(() => {
+      setIsAdding(false);
+    }, 1000);
+  };
+
+  const handleViewCart = () => {
+    setCartOpen(true);
+  };
+
   return (
     <div className="flex flex-col h-full justify-between">
       <div>
@@ -35,7 +51,7 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         </h1>
         
         <div className="mb-6">
-          <span className="text-2xl font-bold">${product.price}</span>
+          <span className="text-2xl font-bold">{formatCurrency(product.price)}</span>
           <span className="ml-2 text-gray-400">USD</span>
         </div>
         
@@ -56,9 +72,9 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
         </div>
       </div>
       
-      <div>
+      <div className="space-y-4">
         <Button 
-          onClick={onAddToCart} 
+          onClick={handleAddToCart} 
           disabled={isAdding}
           className="w-full bg-gradient-to-r from-purple-700 to-indigo-800 hover:from-purple-800 hover:to-indigo-900 text-white py-6"
         >
@@ -73,6 +89,15 @@ const ProductDetails: React.FC<ProductDetailsProps> = ({
               Add to Cart
             </>
           )}
+        </Button>
+        
+        <Button
+          variant="outline"
+          className="w-full border-gray-700 text-gray-300 hover:bg-gray-800 py-6"
+          onClick={handleViewCart}
+        >
+          <ShoppingBag className="mr-2 h-4 w-4" />
+          View Cart
         </Button>
         
         <p className="text-center text-sm text-gray-500 mt-4">
