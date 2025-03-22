@@ -1,5 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { Json } from '@/integrations/supabase/types';
 
 export interface Product {
   id: string;
@@ -8,6 +9,7 @@ export interface Product {
   description: string;
   features: string[];
   images: string[];
+  created_at?: string;
 }
 
 export const fetchProducts = async (): Promise<Product[]> => {
@@ -36,22 +38,33 @@ export const fetchProducts = async (): Promise<Product[]> => {
         console.error(`Error fetching images for product ${product.id}:`, imagesError);
         return {
           ...product,
-          features: product.features || [],
+          features: convertToStringArray(product.features),
           images: []
         };
       }
       
       return {
         ...product,
-        features: Array.isArray(product.features) ? product.features : 
-                 (typeof product.features === 'object' ? Object.values(product.features) : []),
+        features: convertToStringArray(product.features),
         images: images.map(img => img.image_url)
       };
     })
   );
   
   console.log('Products with images:', productsWithImages);
-  return productsWithImages;
+  return productsWithImages as Product[];
+};
+
+// Helper function to ensure features is always a string array
+const convertToStringArray = (features: unknown): string[] => {
+  if (Array.isArray(features)) {
+    return features.map(item => String(item));
+  } else if (typeof features === 'object' && features !== null) {
+    return Object.values(features).map(item => String(item));
+  } else if (features) {
+    return [String(features)];
+  }
+  return [];
 };
 
 // Function to seed initial data if the DB is empty
