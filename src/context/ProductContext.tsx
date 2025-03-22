@@ -1,18 +1,13 @@
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { CartItem } from '@/components/SideCart';
-
-export interface Product {
-  id: string;
-  name: string;
-  price: number;
-  description: string;
-  features: string[];
-  images: string[];
-}
+import { fetchProducts, seedInitialData, Product } from '@/lib/api';
+import { toast } from "sonner";
 
 interface ProductContextType {
   products: Product[];
+  isLoading: boolean;
+  error: string | null;
   selectedProductId: string;
   setSelectedProductId: (id: string) => void;
   cartItems: CartItem[];
@@ -26,69 +21,48 @@ interface ProductContextType {
 
 const ProductContext = createContext<ProductContextType | undefined>(undefined);
 
-// Mock product data until we have Supabase integration
-const mockProducts: Product[] = [
-  {
-    id: "scrapwrk-001",
-    name: "SCRAPWRK 001: HOODIE",
-    price: 499,
-    description: "One-of-a-kind handcrafted hoodie made from premium recycled materials. Each piece represents the perfect fusion of sustainability and high fashion.",
-    features: [
-      "Handmade in limited quantities",
-      "Sustainable materials",
-      "Unique design - no two pieces are alike",
-      "Water-resistant outer layer",
-    ],
-    images: [
-      "/images/product-1.jpg",
-      "/images/product-2.jpg",
-      "/images/product-3.jpg",
-      "/images/product-4.jpg",
-    ]
-  },
-  {
-    id: "scrapwrk-002",
-    name: "SCRAPWRK 002: PANTS",
-    price: 399,
-    description: "Artisanal pants crafted from reclaimed textiles. Featuring unique patterns and textures, these pants offer comfort with sustainable style.",
-    features: [
-      "Ethically produced",
-      "Zero-waste manufacturing",
-      "Adjustable waistband",
-      "Reinforced stitching for durability",
-    ],
-    images: [
-      "/images/product-2.jpg",
-      "/images/product-3.jpg",
-      "/images/product-1.jpg", 
-      "/images/product-4.jpg",
-    ]
-  },
-  {
-    id: "scrapwrk-003",
-    name: "SCRAPWRK 003: HAT",
-    price: 199,
-    description: "Minimalist hat designed with purpose. Featuring a unique silhouette and crafted from recovered materials, each hat tells its own story.",
-    features: [
-      "One size fits most",
-      "UV protection",
-      "Breathable material",
-      "Reversible design",
-    ],
-    images: [
-      "/images/product-3.jpg",
-      "/images/product-4.jpg",
-      "/images/product-1.jpg",
-      "/images/product-2.jpg",
-    ]
-  }
-];
-
 export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [products] = useState<Product[]>(mockProducts);
-  const [selectedProductId, setSelectedProductId] = useState<string>(products[0].id);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [cartOpen, setCartOpen] = useState(false);
+  
+  // Load products from Supabase
+  useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        setIsLoading(true);
+        // First check if we need to seed data
+        await seedInitialData();
+        
+        // Then fetch all products
+        const data = await fetchProducts();
+        
+        if (data.length === 0) {
+          setError("No products found");
+          return;
+        }
+        
+        setProducts(data);
+        
+        // Set the first product as selected by default
+        if (data.length > 0 && !selectedProductId) {
+          setSelectedProductId(data[0].id);
+        }
+        
+      } catch (err) {
+        console.error("Error loading products:", err);
+        setError("Failed to load products");
+        toast.error("Failed to load products. Please try again later.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadProducts();
+  }, []);
   
   // Find the selected product
   const selectedProduct = products.find(p => p.id === selectedProductId) || null;
@@ -118,6 +92,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     });
     
+    toast.success("Added to cart!");
     // Open cart when item is added
     setCartOpen(true);
   };
@@ -125,6 +100,7 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
   // Remove item from cart
   const removeFromCart = (productId: string) => {
     setCartItems(prev => prev.filter(item => item.id !== productId));
+    toast.info("Item removed from cart");
   };
 
   // Update item quantity
@@ -156,6 +132,8 @@ export const ProductProvider: React.FC<{ children: React.ReactNode }> = ({ child
   return (
     <ProductContext.Provider value={{
       products,
+      isLoading,
+      error,
       selectedProductId,
       setSelectedProductId,
       cartItems,
@@ -178,3 +156,5 @@ export const useProduct = () => {
   }
   return context;
 };
+
+export type { Product };

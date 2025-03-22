@@ -1,5 +1,5 @@
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -21,6 +21,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   onProductSelect 
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const [hoveredProductId, setHoveredProductId] = useState<string | null>(null);
   
   const scroll = (direction: 'left' | 'right') => {
     const container = scrollContainerRef.current;
@@ -38,11 +39,15 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
   };
 
   return (
-    <div className="relative py-8">
+    <div className="relative py-12">
+      <h2 className="text-2xl font-bold mb-8 text-center bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-400">
+        Our Collection
+      </h2>
+      
       <div className="relative">
         {/* Left scroll button */}
         <button 
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full"
+          className="absolute -left-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 backdrop-blur-sm hover:bg-black/60 text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
           onClick={() => scroll('left')}
           aria-label="Scroll left"
         >
@@ -52,29 +57,44 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
         {/* Scrollable container */}
         <div 
           ref={scrollContainerRef}
-          className="flex overflow-x-auto pb-4 scrollbar-none snap-x snap-mandatory gap-6"
+          className="flex overflow-x-auto pb-6 scrollbar-none snap-x snap-mandatory gap-8"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {products.map((product) => (
             <div 
               key={product.id}
               className={cn(
-                "snap-start shrink-0",
-                "min-w-[280px] hover-scale cursor-pointer",
-                selectedProductId === product.id && "ring-2 ring-purple-400"
+                "snap-start shrink-0 transition-all duration-500",
+                "min-w-[300px] cursor-pointer transform",
+                selectedProductId === product.id ? "scale-105" : "hover:scale-105",
+                selectedProductId === product.id && "ring-2 ring-purple-400",
+                hoveredProductId === product.id && "shadow-xl"
               )}
               onClick={() => onProductSelect(product.id)}
+              onMouseEnter={() => setHoveredProductId(product.id)}
+              onMouseLeave={() => setHoveredProductId(null)}
             >
-              <div className="rounded-lg overflow-hidden bg-gray-900">
+              <div className="rounded-2xl overflow-hidden bg-gray-900 shadow-md transition-all duration-300">
                 <img 
                   src={product.image} 
                   alt={product.name} 
-                  className="w-full h-48 object-cover"
+                  className={cn(
+                    "w-full h-56 object-cover transition-all duration-500",
+                    hoveredProductId === product.id && "scale-105"
+                  )}
+                  onError={(e) => {
+                    console.error(`Error loading product image: ${product.image}`);
+                    e.currentTarget.src = '/placeholder.svg';
+                  }}
                 />
               </div>
               <h3 className={cn(
-                "mt-3 text-center text-sm font-medium",
-                selectedProductId === product.id ? "text-purple-400" : "text-white"
+                "mt-4 text-center font-medium transition-all duration-300",
+                selectedProductId === product.id ? 
+                  "text-xl text-purple-400 font-semibold" : 
+                  "text-md text-white",
+                hoveredProductId === product.id && !selectedProductId &&
+                  "text-purple-300"
               )}>
                 {product.name}
               </h3>
@@ -84,7 +104,7 @@ const ProductCarousel: React.FC<ProductCarouselProps> = ({
         
         {/* Right scroll button */}
         <button 
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-black/70 hover:bg-black/90 text-white p-2 rounded-full"
+          className="absolute -right-4 top-1/2 -translate-y-1/2 z-10 bg-black/40 backdrop-blur-sm hover:bg-black/60 text-white p-3 rounded-full transition-all duration-300 hover:scale-110"
           onClick={() => scroll('right')}
           aria-label="Scroll right"
         >
