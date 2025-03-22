@@ -71,6 +71,13 @@ const convertToStringArray = (features: unknown): string[] => {
 export const seedInitialData = async () => {
   console.log('Checking if we need to seed initial data...');
   
+  // Ensure storage bucket exists
+  const { data: buckets } = await supabase.storage.listBuckets();
+  if (!buckets?.find(bucket => bucket.name === 'images')) {
+    console.log('Creating images bucket...');
+    await supabase.storage.createBucket('images', { public: true });
+  }
+  
   // Check if products exist
   const { count, error } = await supabase
     .from('products')
@@ -85,6 +92,61 @@ export const seedInitialData = async () => {
   if (count === 0) {
     console.log('No products found, seeding initial data...');
     
+    // Upload sample images to storage if needed
+    const sampleImages = [
+      '/images/product-1.jpg',
+      '/images/product-2.jpg',
+      '/images/product-3.jpg',
+      '/images/product-4.jpg'
+    ];
+    
+    // Upload images to storage bucket
+    let uploadedImageUrls: string[] = [];
+    for (let i = 0; i < sampleImages.length; i++) {
+      const imagePath = sampleImages[i];
+      const imageName = `product-${i + 1}.jpg`;
+      
+      try {
+        // Check if image already exists in storage
+        const { data: exists } = await supabase.storage.from('images').list('', {
+          search: imageName
+        });
+        
+        if (!exists || exists.length === 0) {
+          // Fetch the image from public folder
+          const response = await fetch(imagePath);
+          const blob = await response.blob();
+          
+          // Upload to storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('images')
+            .upload(imageName, blob, { upsert: true });
+          
+          if (uploadError) {
+            console.error(`Error uploading image ${imageName}:`, uploadError);
+            continue;
+          }
+        }
+        
+        // Get public URL for the image
+        const { data: urlData } = supabase.storage.from('images').getPublicUrl(imageName);
+        uploadedImageUrls.push(urlData.publicUrl);
+      } catch (err) {
+        console.error(`Error processing image ${imageName}:`, err);
+      }
+    }
+    
+    // If no images were uploaded, use placeholders
+    if (uploadedImageUrls.length === 0) {
+      uploadedImageUrls = [
+        '/placeholder.svg',
+        '/placeholder.svg',
+        '/placeholder.svg',
+        '/placeholder.svg'
+      ];
+    }
+    
+    // Define mock products
     const mockProducts = [
       {
         name: "SCRAPWRK 001: HOODIE",
@@ -119,34 +181,19 @@ export const seedInitialData = async () => {
         continue;
       }
       
-      // List files from the storage bucket to use as product images
-      const { data: files, error: storageError } = await supabase
-        .storage
-        .from('images')
-        .list();
-      
-      if (storageError || !files || files.length === 0) {
-        console.error('Error listing files or no files found:', storageError);
-        continue;
-      }
-      
-      // Get 4 random images for each product
-      const randomImages = files
-        .filter(file => file.name.endsWith('.jpg') || file.name.endsWith('.png'))
-        .sort(() => 0.5 - Math.random())
-        .slice(0, 4);
-      
-      // Insert image references
-      for (let i = 0; i < randomImages.length; i++) {
-        const imageUrl = supabase.storage.from('images').getPublicUrl(randomImages[i].name).data.publicUrl;
-        
-        await supabase
+      // Assign 4 random images for each product
+      for (let i = 0; i < Math.min(4, uploadedImageUrls.length); i++) {
+        const { error: imageError } = await supabase
           .from('product_images')
           .insert({
             product_id: newProduct.id,
-            image_url: imageUrl,
+            image_url: uploadedImageUrls[i % uploadedImageUrls.length],
             display_order: i
           });
+          
+        if (imageError) {
+          console.error(`Error inserting product image for product ${newProduct.id}:`, imageError);
+        }
       }
     }
     
