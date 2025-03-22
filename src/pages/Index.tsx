@@ -9,10 +9,13 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useQuery } from "@tanstack/react-query";
 import { fetchCurrentProduct } from "@/lib/api";
+import ProductCarousel from "@/components/ProductCarousel";
 
 const Index = () => {
   const { toast } = useToast();
   const [isAdding, setIsAdding] = useState(false);
+  const [selectedProductId, setSelectedProductId] = useState("product-1");
+  
   const { data: product, isLoading, error } = useQuery({
     queryKey: ['currentProduct'],
     queryFn: fetchCurrentProduct,
@@ -29,6 +32,19 @@ const Index = () => {
     }, 1000);
   };
 
+  // Product options for the carousel
+  const productOptions = [
+    { id: "product-1", name: "SCRAPWRK 001: HOODIE", image: "/images/product-1.jpg" },
+    { id: "product-2", name: "SCRAPWRK 002: PANTS", image: "/images/product-2.jpg" },
+    { id: "product-3", name: "SCRAPWRK 003: HAT", image: "/images/product-3.jpg" },
+  ];
+
+  const handleProductSelect = (productId) => {
+    setSelectedProductId(productId);
+    // In a real app, we would fetch the product data based on ID
+    // For now, we'll continue using our fallback/mock product
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-black">
@@ -40,14 +56,30 @@ const Index = () => {
   if (error) {
     console.error("Failed to load product:", error);
     // Fall back to hardcoded product while we set up backend
-    return <FallbackProduct onAddToCart={handleAddToCart} isAdding={isAdding} />;
+    return (
+      <FallbackProduct 
+        onAddToCart={handleAddToCart} 
+        isAdding={isAdding} 
+        productOptions={productOptions}
+        onProductSelect={handleProductSelect}
+        selectedProductId={selectedProductId}
+      />
+    );
   }
 
   // Use the data from API if available, otherwise use fallback
   return product ? (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
+      <div className="h-24"></div> {/* Spacer for better breathing room after navbar */}
       <main>
+        <div className="container mx-auto px-4 mb-12">
+          <ProductCarousel 
+            products={productOptions} 
+            selectedProductId={selectedProductId} 
+            onProductSelect={handleProductSelect} 
+          />
+        </div>
         <div className="container mx-auto px-4 py-12 grid md:grid-cols-2 gap-8 md:gap-16">
           <div className="relative">
             <ProductImageCarousel images={product.images} />
@@ -62,12 +94,18 @@ const Index = () => {
       <Footer />
     </div>
   ) : (
-    <FallbackProduct onAddToCart={handleAddToCart} isAdding={isAdding} />
+    <FallbackProduct 
+      onAddToCart={handleAddToCart} 
+      isAdding={isAdding} 
+      productOptions={productOptions}
+      onProductSelect={handleProductSelect}
+      selectedProductId={selectedProductId}
+    />
   );
 };
 
 // Fallback component with hardcoded data until we connect Supabase
-const FallbackProduct = ({ onAddToCart, isAdding }) => {
+const FallbackProduct = ({ onAddToCart, isAdding, productOptions, onProductSelect, selectedProductId }) => {
   const fallbackProduct = {
     name: "QUANTUM SCRAP JACKET",
     price: 499,
@@ -90,7 +128,15 @@ const FallbackProduct = ({ onAddToCart, isAdding }) => {
   return (
     <div className="min-h-screen bg-black text-white">
       <Navbar />
+      <div className="h-24"></div> {/* Spacer for better breathing room after navbar */}
       <main>
+        <div className="container mx-auto px-4 mb-12">
+          <ProductCarousel 
+            products={productOptions} 
+            selectedProductId={selectedProductId} 
+            onProductSelect={onProductSelect} 
+          />
+        </div>
         <div className="container mx-auto px-4 py-12 grid md:grid-cols-2 gap-8 md:gap-16">
           <div className="relative">
             <ProductImageCarousel images={fallbackImages} />
