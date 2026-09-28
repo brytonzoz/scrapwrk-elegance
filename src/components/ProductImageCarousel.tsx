@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -93,18 +92,18 @@ const ProductImageCarousel: React.FC<ProductImageCarouselProps> = ({ images }) =
       
       <button 
         onClick={prevImage}
-        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-x-1 hover:bg-black/60"
+        className="absolute left-4 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md text-white p-3 rounded-full md:opacity-0 opacity-70 group-hover:opacity-100 transition-all duration-300 transform group-hover:-translate-x-1 hover:bg-black/60 active:bg-black/80 touch-manipulation"
         aria-label="Previous image"
       >
-        <ChevronLeft className="h-6 w-6" />
+        <ChevronLeft className="h-5 w-5 md:h-6 md:w-6" />
       </button>
       
       <button 
         onClick={nextImage}
-        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md text-white p-3 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1 hover:bg-black/60"
+        className="absolute right-4 top-1/2 -translate-y-1/2 bg-black/40 backdrop-blur-md text-white p-3 rounded-full md:opacity-0 opacity-70 group-hover:opacity-100 transition-all duration-300 transform group-hover:translate-x-1 hover:bg-black/60 active:bg-black/80 touch-manipulation"
         aria-label="Next image"
       >
-        <ChevronRight className="h-6 w-6" />
+        <ChevronRight className="h-5 w-5 md:h-6 md:w-6" />
       </button>
       
       {images.length > 1 && (

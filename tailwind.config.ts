@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -102,6 +101,34 @@ export default {
 				"slide-out": {
 					"0%": { transform: "translateX(0)" },
 					"100%": { transform: "translateX(100%)" }
+				},
+				"swipe-hint": {
+					"0%": { transform: "translateX(0)" },
+					"50%": { transform: "translateX(-6px)" },
+					"100%": { transform: "translateX(0)" }
+				},
+				"fade-in-out": {
+					"0%": { opacity: "0" },
+					"10%": { opacity: "0.7" },
+					"50%": { opacity: "0.5" },
+					"90%": { opacity: "0.2" },
+					"100%": { opacity: "0" }
+				},
+				"swipe-left-in": {
+					"0%": { transform: "translateX(100%)", opacity: "0", scale: "0.9" },
+					"100%": { transform: "translateX(0)", opacity: "1", scale: "1" }
+				},
+				"swipe-right-in": {
+					"0%": { transform: "translateX(-100%)", opacity: "0", scale: "0.9" },
+					"100%": { transform: "translateX(0)", opacity: "1", scale: "1" }
+				},
+				"swipe-left-out": {
+					"0%": { transform: "translateX(0)", opacity: "1", scale: "1" },
+					"100%": { transform: "translateX(-100%)", opacity: "0", scale: "0.9" }
+				},
+				"swipe-right-out": {
+					"0%": { transform: "translateX(0)", opacity: "1", scale: "1" },
+					"100%": { transform: "translateX(100%)", opacity: "0", scale: "0.9" }
 				}
 			},
 			animation: {
@@ -110,7 +137,13 @@ export default {
 				"fade-in": "fade-in 0.3s ease-out",
 				"fade-out": "fade-out 0.3s ease-out",
 				"slide-in": "slide-in 0.3s ease-out",
-				"slide-out": "slide-out 0.3s ease-out"
+				"slide-out": "slide-out 0.3s ease-out",
+				"swipe-hint": "swipe-hint 1.5s ease-in-out infinite",
+				"fade-in-out": "fade-in-out 5s ease-in-out forwards",
+				"swipe-left-in": "swipe-left-in 0.5s ease-out",
+				"swipe-right-in": "swipe-right-in 0.5s ease-out",
+				"swipe-left-out": "swipe-left-out 0.5s ease-out",
+				"swipe-right-out": "swipe-right-out 0.5s ease-out"
 			}
 		}
 	},
